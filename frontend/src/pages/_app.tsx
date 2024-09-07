@@ -1,4 +1,4 @@
-import HeaderComponent from "@/component/headerComponent";
+import HeaderComponent from "@/components/headerComponent";
 import { SolanaWalletProvider } from "@/provider/SolanaWalletProvider";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
