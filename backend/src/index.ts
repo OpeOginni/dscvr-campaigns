@@ -6,7 +6,11 @@ import { connectToMongoDB } from './database/mongoose.connection';
 import { createCampaignMiddleware, getCampaignMiddleware } from './campaigns/campaign.validation';
 import { createCampaign, getCampaigns, getCreatorCampaigns } from './campaigns/campaign.service';
 import { getCookie } from 'hono/cookie';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
+const MONGO_DB_URI = process.env.MONGO_DB_URI;
+const PORT = process.env.PORT;
 const app = new Hono()
 
 app.use('*', cors())
@@ -54,11 +58,11 @@ app.get('/campaigns/leader-board', (c) => {
   return c.json({ message: 'Hello Hono!' })
 })
 
-const port = 3000
-connectToMongoDB('mongodb://localhost:27017/hono', () => {
-  console.log(`Server is running on port ${port}`)
+
+connectToMongoDB(MONGO_DB_URI!, () => {
+  console.log(`Server is running on port ${PORT}`)
   serve({
     fetch: app.fetch,
-    port
+    port: Number(PORT)
   })
 })
