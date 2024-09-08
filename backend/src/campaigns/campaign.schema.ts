@@ -46,7 +46,9 @@ const CampaignSchema: Schema = new Schema({
   },
   creator: {
     type: String,
+    trim: true,
     required: true,
+    lowercase: true,
   },
   status: {
     type: String,

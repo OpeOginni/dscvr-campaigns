@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger'
 import { connectToMongoDB } from './database/mongoose.connection';
 import { createCampaignMiddleware, getCampaignMiddleware } from './campaigns/campaign.validation';
-import { createCampaign, getCampaigns } from './campaigns/campaign.service';
+import { createCampaign, getCampaigns, getCreatorCampaigns } from './campaigns/campaign.service';
 import { getCookie } from 'hono/cookie';
 
 const app = new Hono()
@@ -37,8 +37,17 @@ app.patch('/campaigns', (c) => {
   return c.json({ message: 'Hello Hono!' })
 })
 
-app.get('/campaigns/creators', (c) => {
-  return c.json({ message: 'Hello Hono!' })
+app.get('/campaigns/creators', async (c) => {
+  const { limit = 10, page = 1, ...q } = c.req.query();
+  const allCookies = getCookie(c);
+  const username = allCookies['username'];
+  if (!username) {
+    c.status(400);
+    return c.json({ message: 'Invalid username' });
+  }
+
+  const creatorCampaigns = await getCreatorCampaigns(username, Number(page), Number(limit));
+  return c.json({ message: 'All creator campaign', ...creatorCampaigns })
 })
 
 app.get('/campaigns/leader-board', (c) => {

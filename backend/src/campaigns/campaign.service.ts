@@ -13,3 +13,8 @@ export const getCampaigns = async (page: number, limit: number, query = {}) => {
   return await paginatedData(CampaignModel, page, limit, query);
 }
 
+export const getCreatorCampaigns = async (username: string, page: number, limit: number, query = {}) => {
+  query = { ...query, creator: username.toLocaleLowerCase() };
+  return await paginatedData(CampaignModel, page, limit, query);
+}
+
