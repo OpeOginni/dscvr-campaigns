@@ -1,8 +1,9 @@
-import HeaderComponent from "@/components/headerComponent";
 import { SolanaWalletProvider } from "@/provider/SolanaWalletProvider";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { Toaster } from "@/components/ui/toaster";
+import { ReactQueryClientProvider } from "@/provider/ReactQueryClientProvider";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -13,8 +14,10 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="dscvr:canvas:version" content="vNext" />{" "}
       </Head>
       <SolanaWalletProvider>
-        <HeaderComponent />
-        <Component {...pageProps} />
+        <ReactQueryClientProvider>
+          <Component {...pageProps} />
+          <Toaster />
+        </ReactQueryClientProvider>
       </SolanaWalletProvider>
     </>
   );

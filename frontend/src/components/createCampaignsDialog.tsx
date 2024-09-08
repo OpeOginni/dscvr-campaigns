@@ -24,8 +24,10 @@ import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Checkbox } from "./ui/checkbox"; // Assuming Checkbox is already implemented
+import { Checkbox } from "./ui/checkbox";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const formSchema = z.discriminatedUnion("distribution", [
   z.object({
@@ -57,7 +59,7 @@ const formSchema = z.discriminatedUnion("distribution", [
     shouldBePortalMember: z.boolean().default(false),
   }),
   z.object({
-    distribution: z.literal("Token"),
+    distribution: z.literal("TOKEN"),
     title: z.string().min(2, {
       message: "Title must be at least 2 characters.",
     }),
@@ -67,10 +69,10 @@ const formSchema = z.discriminatedUnion("distribution", [
     setEndDate: z.boolean().default(false),
     endDate: z.date().optional(),
     tokenName: z.string().min(2, {
-      message: "Token name must be at least 2 characters.",
+      message: "TOKEN name must be at least 2 characters.",
     }),
     tokenSymbol: z.string().min(2, {
-      message: "Token symbol must be at least 2 characters.",
+      message: "TOKEN symbol must be at least 2 characters.",
     }),
     maxDistribution: z.coerce.number().int().gte(0, {
       message: "Must be greater than or equal to 0.",
@@ -91,6 +93,8 @@ const formSchema = z.discriminatedUnion("distribution", [
 
 export default function CreateCampaignsDialog() {
   const [showEndDate, setShowEndDate] = useState(false);
+  const { toast } = useToast();
+  const { publicKey } = useWallet();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -108,17 +112,45 @@ export default function CreateCampaignsDialog() {
       shouldReactToPost: false,
       shouldCommentOnPost: false,
       shouldBePortalMember: false,
-      distribution: "Token", // Default to "NFT" as "Token" is coming soon
-      // Token Specific Fields (will be ignored for "NFT" distribution)
+      distribution: "TOKEN", // Default to "NFT" as "TOKEN" is coming soon
       tokenName: "",
       tokenSymbol: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          creator: publicKey?.toBase58(),
+          status: "ACTIVE",
+          ...values,
+        }),
+      }
+    );
+
+    console.log(response);
+
+    if (response.status === 200) {
+      toast({
+        title: "Created Campaign",
+      });
+    } else {
+      toast({
+        title: "Failed to create campaign",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -271,7 +303,7 @@ export default function CreateCampaignsDialog() {
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="Token" />
+                            <RadioGroupItem value="TOKEN" />
                           </FormControl>
                           <FormLabel className="font-normal">Tokens</FormLabel>
                         </FormItem>
@@ -313,8 +345,8 @@ export default function CreateCampaignsDialog() {
               </>
             )}
 
-            {/* Token Specific Fields */}
-            {form.getValues("distribution") === "Token" && (
+            {/* TOKEN Specific Fields */}
+            {form.getValues("distribution") === "TOKEN" && (
               <div className="grid grid-cols-2 gap-2">
                 <FormField
                   control={form.control}
