@@ -1,5 +1,5 @@
+import { paginatedData } from "../shared/utils.shared";
 import { CampaignModel, CampaignStatus, ICampaign } from "./campaign.schema";
-import { Model } from "mongoose";
 
 
 export const createCampaign = async (campaignData: ICampaign) => {
@@ -8,3 +8,8 @@ export const createCampaign = async (campaignData: ICampaign) => {
   campaign.status = CampaignStatus.ACTIVE;
   return await campaign.save();
 }
+
+export const getCampaigns = async (page: number, limit: number, query = {}) => {
+  return await paginatedData(CampaignModel, page, limit, query);
+}
+

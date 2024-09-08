@@ -1,12 +1,7 @@
 import { createMiddleware } from "hono/factory"
 import Joi from 'joi';
-import { ICampaign } from "./campaign.schema";
 
-export const createCampaignMiddleware = createMiddleware<{
-  Variables: {
-    validated: () => ICampaign
-  }
-}>(async (c, next) => {
+export const createCampaignMiddleware = createMiddleware(async (c, next) => {
   const schema = Joi.object({
     title: Joi.string().required(),
     startDate: Joi.date().required(),
@@ -19,7 +14,7 @@ export const createCampaignMiddleware = createMiddleware<{
   });
 
   const body = await c.req.json();
-  const { error, value } = schema.validate(body, { abortEarly: false });
+  const { error } = schema.validate(body, { abortEarly: false });
   if (error) {
     c.status(400);
     c.res = new Response(JSON.stringify({ error: error.details.map(e => e.message) }), {
@@ -29,9 +24,28 @@ export const createCampaignMiddleware = createMiddleware<{
       }
     });
     return;
-    // c.throw(400, error.details[0].message);
   }
+  await next();
+});
 
-  c.set('validated', () => value);
+export const getCampaignMiddleware = createMiddleware(async (c, next) => {
+  const { q, limit = 10, page = 1 } = c.req.query()
+  const data = { limit, page };
+  const schema = Joi.object({
+    page: Joi.number().optional().allow(null).empty("").integer().min(1).message('Page must be a positive integer'),
+    limit: Joi.number().optional().allow(null).empty("").integer().min(1).message('Limit must be a positive integer'),
+  });
+  const { error } = schema.validate(data, { abortEarly: false });
+  if (error) {
+    console.log('error', error);
+    c.status(400);
+    c.res = new Response(JSON.stringify({ error: error.details.map(e => e.message) }), {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return;
+  }
   await next();
 });
