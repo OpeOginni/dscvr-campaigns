@@ -1,14 +1,24 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { createCampaign } from './campaigns/campaign.service';
+import { createCampaignMiddleware } from './campaigns/campaign.validation';
+import { connectToMongoDB } from './database/mongoose.connection';
 
 const app = new Hono()
+
+app.use('*', cors())
+app.use(logger())
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
 });
 
-app.post('/campaigns', (c) => {
-  return c.json({ message: 'Hello Hono!' })
+app.post('/campaigns', createCampaignMiddleware, async (c) => {
+  const body = await c.req.json();
+  const newCampaign = await createCampaign(body);
+  return c.json({ message: 'Campaign created successfully', data: newCampaign })
 })
 
 app.get('/campaigns', (c) => {
@@ -28,9 +38,14 @@ app.get('/campaigns/leader-board', (c) => {
 })
 
 const port = 3000
+connectToMongoDB('mongodb://localhost:27017/hono', () => {
+console.log(`Server is running on port ${port}`)
 console.log(`Server is running on port ${port}`)
 
-serve({
-  fetch: app.fetch,
-  port
+  console.log(`Server is running on port ${port}`)
+
+  serve({
+    fetch: app.fetch,
+    port
+  })
 })
