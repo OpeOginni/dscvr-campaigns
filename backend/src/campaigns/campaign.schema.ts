@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export enum CampaignStatus {
   ACTIVE = 'active',
@@ -23,6 +23,8 @@ export interface ICampaign extends Document {
     numberOrUserRewards: number, // 1 | 10 | -1
     numberOfIssuedRewards: number, // 0 | 10 | -1
   },
+  createdAt?: Date,
+  updatedAt?: Date,
 }
 
 // Define the Mongoose schema for the Campaign document
@@ -42,7 +44,6 @@ const CampaignSchema: Schema = new Schema({
   },
   endDate: {
     type: Date,
-    required: true,
   },
   creator: {
     type: String,
@@ -71,10 +72,10 @@ const CampaignSchema: Schema = new Schema({
       required: true,
     },
   },
-});
+}, { timestamps: true });
 
 // Create and export the Campaign model
-export const CampaignModel = mongoose.model<ICampaign>('Campaigns', CampaignSchema);
+const CampaignModel = mongoose.model<ICampaign>('Campaigns', CampaignSchema);
 CampaignSchema.set('toJSON', {
   virtuals: true,
   transform: function (doc, ret) {
@@ -83,3 +84,5 @@ CampaignSchema.set('toJSON', {
     delete ret.__v;
   },
 });
+
+export { CampaignModel };

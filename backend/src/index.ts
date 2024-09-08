@@ -1,12 +1,13 @@
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { logger } from 'hono/logger'
-import { connectToMongoDB } from './database/mongoose.connection';
-import { createCampaignMiddleware, getCampaignMiddleware } from './campaigns/campaign.validation';
-import { createCampaign, getCampaigns, getCreatorCampaigns } from './campaigns/campaign.service';
-import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
+import { Hono } from 'hono';
+import { getCookie } from 'hono/cookie';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { createCampaign, getCampaignLeaderBoard, getCampaigns, getCreatorCampaigns } from './campaigns/campaign.service';
+import { createCampaignValidation, leaderBoardValidation, queryValidation } from './campaigns/campaign.validation';
+import { connectToMongoDB } from './database/mongoose.connection';
+import { validationMiddleware } from './shared/utils.shared';
 dotenv.config();
 
 const MONGO_DB_URI = process.env.MONGO_DB_URI;
@@ -20,13 +21,13 @@ app.get('/', (c) => {
   return c.text('Hello Hono!')
 });
 
-app.post('/campaigns', createCampaignMiddleware, async (c) => {
+app.post('/campaigns', validationMiddleware(createCampaignValidation), async (c) => {
   const body = await c.req.json();
   const newCampaign = await createCampaign(body);
   return c.json({ message: 'Campaign created successfully', data: newCampaign })
 })
 
-app.get('/campaigns', getCampaignMiddleware, async (c) => {
+app.get('/campaigns', validationMiddleware(queryValidation), async (c) => {
   const { limit = 10, page = 1, ...q } = c.req.query()
   // const allCookies = getCookie(c);
   // console.log(allCookies)
@@ -41,7 +42,7 @@ app.patch('/campaigns', (c) => {
   return c.json({ message: 'Hello Hono!' })
 })
 
-app.get('/campaigns/creators', async (c) => {
+app.get('/campaigns/creators', validationMiddleware(queryValidation), async (c) => {
   const { limit = 10, page = 1, ...q } = c.req.query();
   const allCookies = getCookie(c);
   const username = allCookies['username'];
@@ -54,8 +55,12 @@ app.get('/campaigns/creators', async (c) => {
   return c.json({ message: 'All creator campaign', ...creatorCampaigns })
 })
 
-app.get('/campaigns/leader-board', (c) => {
-  return c.json({ message: 'Hello Hono!' })
+app.get('/campaigns/:campaignId/leader-board', validationMiddleware(leaderBoardValidation), async (c) => {
+  const { campaignId } = c.req.param();
+  const { limit = 10, page = 1, ...q } = c.req.query();
+  
+  const leaderBoard = await getCampaignLeaderBoard(campaignId, Number(page), Number(limit));
+  return c.json({ message: 'Campaign Leader board', ...leaderBoard });
 })
 
 
