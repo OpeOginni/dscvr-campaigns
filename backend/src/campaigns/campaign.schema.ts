@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from 'mongoose';
-
 export enum CampaignStatus {
   ACTIVE = 'active',
   INACTIVE = 'inactive',
@@ -18,11 +17,22 @@ export interface ICampaign extends Document {
   endDate: Date;
   creator: string,
   status: CampaignStatus,
+  image?: string,
+  tokenName?: string,
+  tokenSymbol?: string,
   distribution: {
     type: string, // 'nft' | 'token'
-    numberOrUserRewards: number, // 1 | 10 | -1
-    numberOfIssuedRewards: number, // 0 | 10 | -1
+    maxDistribution: number,
   },
+  config: {
+    requiredNumberOfDSCVRPoints: number,
+    requiredDSCVRStreakDays: number,
+    allowRecentAccounts: boolean,
+    shouldFollowCreator: boolean,
+    shouldReactToPost: boolean,
+    shouldCommentOnPost: boolean,
+    shouldBePortalMember: boolean,
+  }
   createdAt?: Date,
   updatedAt?: Date,
 }
@@ -56,22 +66,56 @@ const CampaignSchema: Schema = new Schema({
     enum: CampaignStatus,
     default: true,
   },
+  image: {
+    type: String,
+  },
+  tokenName: {
+    type: String,
+  },
+  tokenSymbol: {
+    type: String,
+  },
   distribution: {
     type: {
       type: String,
       enum: DistributionType,
       required: true,
     },
-    numberOrUserRewards: {
+    maxDistribution: {
       type: Number,
-      required: true,
-    },
-    numberOfIssuedRewards: {
-      type: Number,
-      default: 0,
       required: true,
     },
   },
+  config: {
+    requiredNumberOfDSCVRPoints: {
+      type: Number,
+      required: true,
+    },
+    requiredDSCVRStreakDays: {
+      type: Number,
+      required: true,
+    },
+    allowRecentAccounts: {
+      type: Boolean,
+      required: true,
+    },
+    shouldFollowCreator: {
+      type: Boolean,
+      required: true,
+    },
+    shouldReactToPost: {
+      type: Boolean,
+      required: true,
+    },
+    shouldCommentOnPost: {
+      type: Boolean,
+      required: true,
+    },
+    shouldBePortalMember: {
+      type: Boolean,
+      required: true,
+    },
+  }
 }, { timestamps: true });
 
 // Create and export the Campaign model

@@ -5,9 +5,22 @@ export const createCampaignValidation = Joi.object({
   startDate: Joi.date().required(),
   endDate: Joi.date().optional(),
   creator: Joi.string().required(),
+  status: Joi.string().valid('ACTIVE', 'INACTIVE').required(),
+  image: Joi.string().optional(),
+  tokenName: Joi.string().optional(),
+  tokenSymbol: Joi.string().optional(),
   distribution: Joi.object({
     type: Joi.string().valid('NFT', 'TOKEN').required(),
-    numberOrUserRewards: Joi.number().required(),
+    maxDistribution: Joi.number().required(),
+  }).required(),
+  config: Joi.object({
+    requiredNumberOfDSCVRPoints: Joi.number().required(),
+    requiredDSCVRStreakDays: Joi.number().required(),
+    allowRecentAccounts: Joi.boolean().required(),
+    shouldFollowCreator: Joi.boolean().required(),
+    shouldReactToPost: Joi.boolean().required(),
+    shouldCommentOnPost: Joi.boolean().required(),
+    shouldBePortalMember: Joi.boolean().required(),
   }).required(),
 });
 

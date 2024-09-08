@@ -24,7 +24,7 @@ export const validationMiddleware = (schema: Joi.ObjectSchema) => createMiddlewa
   const paramData = c.req.param();
   const data = { ...jsonData, ...queryData, ...paramData };
   const { error } = schema.validate(data, { abortEarly: false });
-  
+
   if (error) {
     console.log('errors')
     c.status(400);
