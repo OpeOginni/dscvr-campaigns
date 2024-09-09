@@ -40,9 +40,8 @@ const formSchema = z.discriminatedUnion("distribution", [
     }),
     setEndDate: z.boolean().default(false),
     endDate: z.date().optional(),
-    image: z.string().url({
-      message: "Image must be a valid URL.",
-    }),
+    image: z.any().optional(),
+
     maxDistribution: z.coerce.number().int().gte(0, {
       message: "Must be greater than or equal to 0.",
     }),
@@ -68,6 +67,7 @@ const formSchema = z.discriminatedUnion("distribution", [
     }),
     setEndDate: z.boolean().default(false),
     endDate: z.date().optional(),
+    image: z.any().optional(),
     tokenName: z.string().min(2, {
       message: "TOKEN name must be at least 2 characters.",
     }),
@@ -102,6 +102,7 @@ export default function CreateCampaignsDialog() {
       // Common Fields
       title: "",
       startDate: new Date(),
+      image: undefined,
       endDate: undefined,
       setEndDate: false,
       maxDistribution: 0,
@@ -122,19 +123,23 @@ export default function CreateCampaignsDialog() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+    const formData = new FormData();
+    formData.append("creator", publicKey?.toBase58() || "");
+    formData.append("status", "ACTIVE");
+
+    for (const key of Object.keys(values)) {
+      if (key === "image" && values.image instanceof File) {
+        formData.append("image", values.image);
+      } else {
+        formData.append(key, values[key as keyof z.infer<typeof formSchema>]); // Type assertion added here
+      }
+    }
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          creator: publicKey?.toBase58(),
-          status: "ACTIVE",
-          ...values,
-        }),
+        body: formData,
       }
     );
 
@@ -514,6 +519,28 @@ export default function CreateCampaignsDialog() {
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upload Image</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          field.onChange(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>The image for your NFT.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="submit">Create</Button>
             </DialogFooter>
