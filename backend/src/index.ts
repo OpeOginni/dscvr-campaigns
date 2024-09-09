@@ -13,6 +13,7 @@ import {
 } from "./campaigns/campaign.service";
 import {
   createCampaignValidation,
+  interactionValidation,
   leaderBoardValidation,
   queryValidation,
 } from "./campaigns/campaign.validation";
@@ -36,6 +37,7 @@ app.post(
   validationMiddleware(createCampaignValidation),
   async (c) => {
     const body = await c.req.json();
+
     const newCampaign = await createCampaign(body);
     return c.json({
       message: "Campaign created successfully",
@@ -91,6 +93,15 @@ app.get(
       Number(limit)
     );
     return c.json({ message: "All creator campaign", ...creatorCampaigns });
+  }
+);
+
+app.post(
+  "/campaigns/:campaignId/interact",
+  validationMiddleware(interactionValidation),
+  async (c) => {
+    const { campaignId } = c.req.param();
+    const body = await c.req.parseBody();
   }
 );
 

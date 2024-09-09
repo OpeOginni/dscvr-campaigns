@@ -7,7 +7,8 @@ export const createCampaignValidation = Joi.object({
   setEndDate: Joi.boolean().optional(),
   creator: Joi.string().required(),
   status: Joi.string().valid("ACTIVE", "INACTIVE").required(),
-  image: Joi.string().optional(),
+  image: Joi.any().optional(),
+  imageURI: Joi.string().optional(),
   tokenName: Joi.string().optional(),
   tokenSymbol: Joi.string().optional(),
   distribution: Joi.string().valid("NFT", "TOKEN").required(),
@@ -40,4 +41,9 @@ export const queryValidation = Joi.object({
 
 export const leaderBoardValidation = queryValidation.keys({
   campaignId: Joi.string().required(),
+});
+
+export const interactionValidation = Joi.object({
+  campaignId: Joi.string().required(),
+  walletAddress: Joi.string().required(),
 });

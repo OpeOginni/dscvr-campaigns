@@ -17,10 +17,9 @@ export interface ICampaign extends Document {
   endDate: Date;
   creator: string;
   status: CampaignStatus;
-  image?: string;
   tokenName?: string;
   tokenSymbol?: string;
-  distribution: string; // 'nft' | 'token'
+  distribution: DistributionType; // 'nft' | 'token'
   maxDistribution: number;
   requiredNumberOfDSCVRPoints: number;
   requiredDSCVRStreakDays: number;
@@ -29,6 +28,10 @@ export interface ICampaign extends Document {
   shouldReactToPost: boolean;
   shouldCommentOnPost: boolean;
   shouldBePortalMember: boolean;
+  distributedTokenAddress: string;
+  numberOfTokensAlreadyDistributed: number;
+  image: any;
+  imageURI: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -62,9 +65,6 @@ const CampaignSchema: Schema = new Schema(
       type: String,
       enum: CampaignStatus,
       default: true,
-    },
-    image: {
-      type: String,
     },
     tokenName: {
       type: String,
@@ -110,6 +110,18 @@ const CampaignSchema: Schema = new Schema(
       type: Boolean,
       required: true,
     },
+    distributedTokenAddress: {
+      type: String,
+      required: false,
+    },
+    numberOfTokensAlreadyDistributed: {
+      type: String,
+      required: false,
+    },
+    imageURI: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );
@@ -118,10 +130,10 @@ const CampaignSchema: Schema = new Schema(
 const CampaignModel = mongoose.model<ICampaign>("Campaigns", CampaignSchema);
 CampaignSchema.set("toJSON", {
   virtuals: true,
-  transform: function (doc, ret) {
+  transform: (doc, ret) => {
     ret.id = ret._id;
-    delete ret._id;
-    delete ret.__v;
+    ret._id = undefined;
+    ret.__v = undefined;
   },
 });
 
