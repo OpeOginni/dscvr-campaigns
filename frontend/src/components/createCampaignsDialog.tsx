@@ -29,6 +29,14 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+const MAX_FILE_SIZE = 1024 * 1024 * 5;
+const ACCEPTED_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+
 const formSchema = z.discriminatedUnion("distribution", [
   z.object({
     distribution: z.literal("NFT"),
@@ -40,8 +48,16 @@ const formSchema = z.discriminatedUnion("distribution", [
     }),
     setEndDate: z.boolean().default(false),
     endDate: z.date().optional(),
-    image: z.any().optional(),
-
+    image: z
+      .any()
+      .refine((file) => {
+        return file?.size <= MAX_FILE_SIZE;
+      }, "Max image size is 5MB.")
+      .refine(
+        (file) => ACCEPTED_IMAGE_MIME_TYPES.includes(file?.type),
+        "Only .jpg, .jpeg, .png and .webp formats are supported."
+      )
+      .optional(),
     maxDistribution: z.coerce.number().int().gte(0, {
       message: "Must be greater than or equal to 0.",
     }),
@@ -67,7 +83,16 @@ const formSchema = z.discriminatedUnion("distribution", [
     }),
     setEndDate: z.boolean().default(false),
     endDate: z.date().optional(),
-    image: z.any().optional(),
+    image: z
+      .any()
+      .refine((file) => {
+        return file?.size <= MAX_FILE_SIZE;
+      }, "Max image size is 5MB.")
+      .refine(
+        (file) => ACCEPTED_IMAGE_MIME_TYPES.includes(file?.type),
+        "Only .jpg, .jpeg, .png and .webp formats are supported."
+      )
+      .optional(),
     tokenName: z.string().min(2, {
       message: "TOKEN name must be at least 2 characters.",
     }),
@@ -93,6 +118,8 @@ const formSchema = z.discriminatedUnion("distribution", [
 
 export default function CreateCampaignsDialog() {
   const [showEndDate, setShowEndDate] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+
   const { toast } = useToast();
   const { publicKey } = useWallet();
 
@@ -120,41 +147,65 @@ export default function CreateCampaignsDialog() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-    const formData = new FormData();
-    formData.append("creator", publicKey?.toBase58() || "");
-    formData.append("status", "ACTIVE");
+    setIsLoading(true); // Set loading state to true
 
-    for (const key of Object.keys(values)) {
-      if (key === "image" && values.image instanceof File) {
-        formData.append("image", values.image);
-      } else {
-        formData.append(key, values[key as keyof z.infer<typeof formSchema>]); // Type assertion added here
-      }
+    console.log(values);
+
+    // Convert image to base64 string if it exists
+    const convertImageToBase64 = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+      });
+    };
+
+    let imageBase64 = "";
+    if (values.image instanceof File) {
+      imageBase64 = await convertImageToBase64(values.image);
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns`,
-      {
-        method: "POST",
-        body: formData,
+    const payload = {
+      creator: publicKey?.toBase58(),
+      status: "ACTIVE",
+      ...values,
+      image: imageBase64, // Add the base64 string to the payload
+    };
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(response);
+
+      if (response.status === 200) {
+        toast({
+          title: "Created Campaign",
+        });
+      } else {
+        toast({
+          title: "Failed to create campaign",
+          description: "Please try again",
+          variant: "destructive",
+        });
       }
-    );
-
-    console.log(response);
-
-    if (response.status === 200) {
-      toast({
-        title: "Created Campaign",
-      });
-    } else {
+    } catch (error) {
+      console.error("Error creating campaign:", error);
       toast({
         title: "Failed to create campaign",
-        description: "Please try again",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false); // Set loading state to false
     }
   }
 
@@ -542,7 +593,9 @@ export default function CreateCampaignsDialog() {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Create</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Loading..." : "Create Campaign"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

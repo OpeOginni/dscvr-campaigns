@@ -33,6 +33,19 @@ export default function CampaignCanvas() {
     enabled: isReady && !!id,
   });
 
+  // async function mintToken() {
+  //   await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns/${id}/interact`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       userId: user.id,
+  //       userWalletAddress: user.,
+  //     }),
+  //   });
+  // }
+
   if (!isReady || isLoading || !user) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">

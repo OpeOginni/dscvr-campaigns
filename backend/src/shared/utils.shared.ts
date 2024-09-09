@@ -37,7 +37,6 @@ export const validationMiddleware = (schema: Joi.ObjectSchema) =>
 
     if (error) {
       console.log("errors");
-      console.log(error);
       c.status(400);
       c.res = new Response(
         JSON.stringify({ error: error.details.map((e) => e.message) }),
@@ -57,6 +56,30 @@ export const getJsonData = async (c: Context<any, string, {}>) => {
   try {
     return await c.req.json();
   } catch (error) {
+    console.log(error);
     return {};
   }
+};
+
+export const generateFile = async (image: any) => {
+  // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+  let imageUri;
+  if (typeof image === "string") {
+    if (image.startsWith("data:image")) {
+      // If it's a base64 string, convert it to a File object
+      const base64Data = image.split(",")[1];
+      const mimeType = image.match(/data:(.*?);base64/)?.[1];
+      const binary = atob(base64Data);
+      const array = [];
+      for (let i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+      }
+      const imageBuffer = new Uint8Array(array);
+      const blob = new Blob([imageBuffer], { type: mimeType });
+      const file = new File([blob], "image.png", { type: mimeType });
+
+      return { file, imageBuffer };
+    }
+  }
+  throw new Error("Invalid image data");
 };

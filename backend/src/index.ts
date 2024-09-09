@@ -19,6 +19,7 @@ import {
 } from "./campaigns/campaign.validation";
 import { connectToMongoDB } from "./database/mongoose.connection";
 import { validationMiddleware } from "./shared/utils.shared";
+import { HTTPException } from "hono/http-exception";
 dotenv.config();
 
 const MONGO_DB_URI = process.env.MONGO_DB_URI;
@@ -37,12 +38,19 @@ app.post(
   validationMiddleware(createCampaignValidation),
   async (c) => {
     const body = await c.req.json();
-
-    const newCampaign = await createCampaign(body);
-    return c.json({
-      message: "Campaign created successfully",
-      data: newCampaign,
-    });
+    try {
+      const newCampaign = await createCampaign(body);
+      return c.json({
+        message: "Campaign created successfully",
+        data: newCampaign,
+      });
+    } catch (e: any) {
+      console.log(e);
+      throw new HTTPException(400, {
+        message: "Campaign creation failed",
+        cause: e.message,
+      });
+    }
   }
 );
 

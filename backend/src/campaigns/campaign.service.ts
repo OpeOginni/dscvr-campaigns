@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception";
-import { paginatedData } from "../shared/utils.shared";
+import { generateFile, paginatedData } from "../shared/utils.shared";
 import { CampaignLeaderBoardModel } from "./campaign-leaderboard.schema";
 import {
   CampaignModel,
@@ -23,27 +23,20 @@ export const createCampaign = async (campaignData: ICampaign) => {
 
   if (campaignData.image) {
     try {
-      // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-      let imageUri;
-      if (typeof campaignData.image === "string") {
-        // If it's already a string (URI), use it directly
-        imageUri = campaignData.image;
-      } else if (campaignData.image instanceof File) {
-        // If it's a File object, upload it
-        const imageBuffer = await campaignData.image.arrayBuffer();
-        const tokenImageFile = createGenericFile(
-          new Uint8Array(imageBuffer),
-          campaignData.image.name,
-          {
-            tags: [{ name: "contentType", value: campaignData.image.type }],
-          }
-        );
-        [imageUri] = await umi.uploader.upload([tokenImageFile]);
-      } else {
-        throw new Error("Invalid image data");
-      }
-      campaign.image = imageUri;
+      const { file, imageBuffer } = await generateFile(campaignData.image);
+
+      const tokenImageFile = createGenericFile(
+        new Uint8Array(imageBuffer),
+        file.name,
+        {
+          tags: [{ name: "contentType", value: file.type }],
+        }
+      );
+
+      const [imageUri] = await umi.uploader.upload([tokenImageFile]);
+      campaign.imageURI = imageUri;
     } catch (err) {
+      console.log(err);
       throw new HTTPException(500, {
         message: "Error with Uploading Image",
         cause: err,
