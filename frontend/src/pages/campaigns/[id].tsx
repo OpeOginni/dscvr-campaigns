@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { useState } from "react";
-import type { Campaign } from "../../../interfaces/campaign.interface";
+import type { ICampaign } from "../../../interfaces/campaign.interface";
 
 export default function CampaignDetails() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function CampaignDetails() {
   const [showCopied, setShowCopied] = useState(false);
 
   const { data: campaign, isLoading } = useQuery<{
-    data: Campaign;
+    data: ICampaign;
     message: string;
   }>({
     queryKey: ["campaign", id],

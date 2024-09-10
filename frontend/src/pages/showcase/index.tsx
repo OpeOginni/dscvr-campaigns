@@ -1,5 +1,3 @@
-import { useCopyToClipboard } from "usehooks-ts";
-
 export default function Showcase() {
   const dashboardLink =
     process.env.NEXT_PUBLIC_URL || "https://localhost:3000/canvas";

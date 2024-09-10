@@ -1,4 +1,4 @@
-import type { Campaign } from "../../interfaces/campaign.interface";
+import type { ICampaign } from "../../interfaces/campaign.interface";
 
 const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT;
 
@@ -81,7 +81,7 @@ export async function makeGraphQLQuery<T>(
 }
 
 export async function checkUserEligibility(
-  campaign: Campaign,
+  campaign: ICampaign,
   userId: string,
   contentId: string
 ): Promise<CheckUserEligibilityResult> {
