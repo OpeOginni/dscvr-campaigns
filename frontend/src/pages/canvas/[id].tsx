@@ -6,12 +6,14 @@ import { Loader2 } from "lucide-react";
 import type { Campaign } from "../../../interfaces/campaign.interface";
 import { checkUserEligibility } from "@/utils/graphql";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function CampaignCanvas() {
   const router = useRouter();
   const { id } = router.query;
   const { user, content, isReady } = useCanvasClient();
   const { toast } = useToast();
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
 
   const { data: campaign, isLoading } = useQuery<{
     data: Campaign;
@@ -33,18 +35,72 @@ export default function CampaignCanvas() {
     enabled: isReady && !!id,
   });
 
-  // async function mintToken() {
-  //   await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns/${id}/interact`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       userId: user.id,
-  //       userWalletAddress: user.,
-  //     }),
-  //   });
-  // }
+  const handleMintToken = async (_campaign: Campaign, userId: string) => {
+    setIsButtonLoading(true);
+    try {
+      const { isEligible, firstSolanaWallet } = await checkUserEligibility(
+        _campaign,
+        userId,
+        content?.id || "1201336789738979476"
+      );
+
+      if (!isEligible) {
+        toast({
+          title: "Failed to mint",
+          description: "Make sure you meet all requirements",
+          variant: "destructive",
+        });
+        setIsButtonLoading(false);
+        return;
+      }
+
+      if (!firstSolanaWallet) {
+        toast({
+          title: "Failed to mint",
+          description:
+            "Make sure you have a solana wallet connected to your DSCVR account",
+          variant: "destructive",
+        });
+        setIsButtonLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns/${id}/interact`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId,
+            userWalletAddress: firstSolanaWallet.address,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: "Token Minted Successfully",
+        });
+      } else {
+        toast({
+          title: "Failed to Mint Token",
+          description: "Please try again",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error minting token:", error);
+      toast({
+        title: "Failed to Mint Token",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsButtonLoading(false); // Set loading state to false
+    }
+  };
 
   if (!isReady || isLoading || !user) {
     return (
@@ -140,27 +196,12 @@ export default function CampaignCanvas() {
         {!isTooEarly && !isTooLate && (
           <Button
             className="w-24 mt-4"
-            onClick={async () => {
-              const isEligible = await checkUserEligibility(
-                campaign.data,
-                user.id,
-                content?.id || "1201336789738979476"
-              );
-              if (isEligible) {
-                // Proceed with minting
-                console.log("User is eligible to mint");
-              } else {
-                // Show an error message
-                console.log("User is not eligible to mint");
-                toast({
-                  title: "Failed to mint",
-                  description: "Make sure you meet all requiremnts",
-                  variant: "destructive",
-                });
-              }
-            }}
+            onClick={() => handleMintToken(campaign.data, user.id)}
+            disabled={isButtonLoading}
           >
-            Mint {campaign.data.distribution}
+            {isButtonLoading
+              ? "Minting..."
+              : `Mint ${campaign.data.distribution}`}
           </Button>
         )}
       </div>

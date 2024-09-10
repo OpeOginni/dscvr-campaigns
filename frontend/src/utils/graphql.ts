@@ -7,6 +7,47 @@ interface GraphQLResponse<T> {
   errors?: Array<{ message: string }>;
 }
 
+interface Wallet {
+  address: string;
+  isPrimary: boolean;
+  walletType: string;
+  walletChainType: string; // assuming "walletChainType" indicates if it's Solana or another chain
+}
+
+interface User {
+  id: string;
+  username: string;
+  followerCount: number;
+  createdAt: string;
+  dscvrPoints: number;
+  streak: {
+    dayCount: number;
+  };
+  reactionForContent: boolean;
+  hasCommentedOnContent: boolean;
+  wallets: Wallet[];
+}
+
+interface Content {
+  id: string;
+  creator: {
+    id: string;
+    isFollower: boolean;
+  };
+  portal: {
+    id: string;
+    name: string;
+    isMember: boolean;
+  };
+}
+
+interface CheckUserEligibilityResult {
+  isEligible: boolean;
+  firstSolanaWallet?: Wallet | null;
+  userId: string;
+  content: Content;
+}
+
 export async function makeGraphQLQuery<T>(
   query: string,
   variables: Record<string, any>
@@ -40,7 +81,7 @@ export async function checkUserEligibility(
   campaign: Campaign,
   userId: string,
   contentId: string
-): Promise<boolean> {
+): Promise<CheckUserEligibilityResult> {
   const query = `
     query CheckContentAndUserActions($contentId: ContentId!, $userId: DscvrId!) {
       content(id: $contentId) {
@@ -82,8 +123,8 @@ export async function checkUserEligibility(
   };
 
   const result = await makeGraphQLQuery<{
-    content: any;
-    user: any;
+    content: Content;
+    user: User;
   }>(query, variables);
 
   const isEligible =
@@ -96,7 +137,16 @@ export async function checkUserEligibility(
     (!campaign.shouldCommentOnPost || result.user.hasCommentedOnContent) &&
     (!campaign.shouldBePortalMember || result.content.portal.isMember);
 
-  return isEligible;
+  const firstSolanaWallet = result.user.wallets.find(
+    (wallet) => wallet.walletChainType === "solana"
+  );
+
+  return {
+    isEligible,
+    firstSolanaWallet: firstSolanaWallet || null,
+    userId: result.user.id,
+    content: result.content,
+  };
 }
 
 function isAccountOldEnough(createdAt: string): boolean {

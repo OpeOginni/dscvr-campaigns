@@ -45,5 +45,6 @@ export const leaderBoardValidation = queryValidation.keys({
 
 export const interactionValidation = Joi.object({
   campaignId: Joi.string().required(),
+  userId: Joi.string().required(),
   walletAddress: Joi.string().required(),
 });
