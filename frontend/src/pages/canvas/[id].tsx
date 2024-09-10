@@ -3,7 +3,7 @@ import { useCanvasClient } from "@/hooks/useCanvasClient";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import type { Campaign } from "../../../interfaces/campaign.interface";
+import type { ICampaign } from "../../../interfaces/campaign.interface";
 import { checkUserEligibility } from "@/utils/graphql";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -16,7 +16,7 @@ export default function CampaignCanvas() {
   const [isButtonLoading, setIsButtonLoading] = useState(false);
 
   const { data: campaign, isLoading } = useQuery<{
-    data: Campaign;
+    data: ICampaign;
     message: string;
   }>({
     queryKey: ["campaign", id],
@@ -35,7 +35,7 @@ export default function CampaignCanvas() {
     enabled: isReady && !!id,
   });
 
-  const handleMintToken = async (_campaign: Campaign, userId: string) => {
+  const handleMintToken = async (_campaign: ICampaign, userId: string) => {
     setIsButtonLoading(true);
     try {
       const { isEligible, firstSolanaWallet } = await checkUserEligibility(
@@ -181,6 +181,19 @@ export default function CampaignCanvas() {
               distributed as a reward.
             </p>
           </div>
+        </div>
+
+        <div className="mt-4">
+          <h2 className="text-lg font-bold">Minting Status:</h2>
+          <p>
+            Amount Minted: {campaign.data.numberOfTokensAlreadyDistributed} /
+            {campaign.data.maxDistribution}
+          </p>
+          <p>
+            Amount Left to Mint:
+            {campaign.data.maxDistribution -
+              campaign.data.numberOfTokensAlreadyDistributed}
+          </p>
         </div>
 
         {isTooEarly && (

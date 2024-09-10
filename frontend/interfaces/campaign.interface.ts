@@ -1,14 +1,25 @@
-export interface Campaign {
+export enum CampaignStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+}
+
+export enum DistributionType {
+  NFT = "NFT",
+  TOKEN = "TOKEN",
+}
+// Define the interface for the Campaign document
+export interface ICampaign extends Document {
   id: string;
   title: string;
-  status: string;
-  distribution: "TOKEN" | "NFT";
-  startDate: string;
-  endDate?: string;
-  maxDistribution: number;
+  slug?: string;
+  startDate: Date;
+  endDate: Date;
+  creator: string;
+  status: CampaignStatus;
   tokenName?: string;
   tokenSymbol?: string;
-  image?: string;
+  distribution: DistributionType; // 'nft' | 'token'
+  maxDistribution: number;
   requiredNumberOfDSCVRPoints: number;
   requiredDSCVRStreakDays: number;
   allowRecentAccounts: boolean;
@@ -16,8 +27,11 @@ export interface Campaign {
   shouldReactToPost: boolean;
   shouldCommentOnPost: boolean;
   shouldBePortalMember: boolean;
-  creator: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
+  distributedTokenAddress: string;
+  numberOfTokensAlreadyDistributed: number;
+  image: any;
+  imageURI: string;
+  tokenMintAddress?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

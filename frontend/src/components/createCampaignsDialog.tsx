@@ -58,9 +58,15 @@ const formSchema = z.discriminatedUnion("distribution", [
         "Only .jpg, .jpeg, .png and .webp formats are supported."
       )
       .optional(),
-    maxDistribution: z.coerce.number().int().gte(0, {
-      message: "Must be greater than or equal to 0.",
-    }),
+    maxDistribution: z.coerce
+      .number()
+      .int()
+      .gte(0, {
+        message: "Must be greater than or equal to 0.",
+      })
+      .lte(10, {
+        message: "Max distribution should be less than 10",
+      }),
     requiredNumberOfDSCVRPoints: z.coerce.number().int().gte(0, {
       message: "Must be greater than or equal to 0.",
     }),
