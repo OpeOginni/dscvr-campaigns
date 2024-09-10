@@ -69,12 +69,12 @@ export default function CampaignCanvas() {
         `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/campaigns/${id}/interact`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          // headers: {
+          //   "Content-Type": "application/json",
+          // },
           body: JSON.stringify({
             userId: userId,
-            userWalletAddress: firstSolanaWallet.address,
+            walletAddress: firstSolanaWallet.address,
           }),
         }
       );
@@ -113,7 +113,6 @@ export default function CampaignCanvas() {
     );
   }
 
-  console.log(campaign);
   if (!campaign?.data) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">

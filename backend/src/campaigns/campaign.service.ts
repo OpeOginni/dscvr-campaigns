@@ -8,7 +8,7 @@ import {
   type ICampaign,
 } from "./campaign.schema";
 import { Types } from "mongoose"; // Import the 'Types' object from the 'mongoose' module
-import { mintSLPToken } from "../metaplex/SLP_Tokens";
+import { createSLPToken, mintSLPToken } from "../metaplex/SLP_Tokens";
 import { createGenericFile, publicKey } from "@metaplex-foundation/umi";
 import umi from "../metaplex/UMI";
 import { mintNFTToken } from "../metaplex/NFT_Tokens";
@@ -89,15 +89,37 @@ export const interactWithCampaign = async (
     throw new HTTPException(400, { message: "Max Distribution Reached" });
 
   if (campaign.distribution === DistributionType.TOKEN) {
-    const response = await mintSLPToken(
+    if (campaign.tokenMintAddress) {
+      const mintResponse = await mintSLPToken(
+        publicKey(campaign.tokenMintAddress),
+        publicKey(userWalletAddress),
+        1
+      );
+
+      return mintResponse.signature;
+    }
+    const response = await createSLPToken(
       campaign.imageURI,
       campaign.tokenName || "",
-      campaign.tokenSymbol || "",
+      campaign.tokenSymbol || ""
+    );
+
+    await CampaignModel.updateOne(
+      {
+        _id: campaignId,
+      },
+      {
+        tokenMintAddress: response.mintPublicKey,
+      }
+    );
+
+    const mintResponse = await mintSLPToken(
+      publicKey(response.mintPublicKey),
       publicKey(userWalletAddress),
       1
     );
 
-    return response.signature;
+    return mintResponse.signature;
   }
   if (campaign.distribution === DistributionType.NFT) {
     const response = await mintNFTToken(

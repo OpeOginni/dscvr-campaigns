@@ -149,8 +149,6 @@ export default function CreateCampaignsDialog() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true); // Set loading state to true
 
-    console.log(values);
-
     // Convert image to base64 string if it exists
     const convertImageToBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
@@ -183,8 +181,6 @@ export default function CreateCampaignsDialog() {
           },
         }
       );
-
-      console.log(response);
 
       if (response.status === 200) {
         toast({

@@ -10,6 +10,7 @@ import {
   getCampaignLeaderBoard,
   getCampaigns,
   getCreatorCampaigns,
+  interactWithCampaign,
 } from "./campaigns/campaign.service";
 import {
   createCampaignValidation,
@@ -109,7 +110,15 @@ app.post(
   validationMiddleware(interactionValidation),
   async (c) => {
     const { campaignId } = c.req.param();
-    const body = await c.req.parseBody();
+    const body = await c.req.json();
+
+    const signature = await interactWithCampaign(
+      campaignId,
+      body.userId,
+      body.walletAddress
+    );
+
+    return c.json({ message: "Campaign interaction successful", signature });
   }
 );
 

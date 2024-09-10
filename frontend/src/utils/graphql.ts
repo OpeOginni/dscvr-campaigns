@@ -1,6 +1,6 @@
 import type { Campaign } from "../../interfaces/campaign.interface";
 
-const GRAPHQL_ENDPOINT = process.env.GRAPHQL_ENDPOINT;
+const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT;
 
 interface GraphQLResponse<T> {
   data: T;
@@ -52,7 +52,10 @@ export async function makeGraphQLQuery<T>(
   query: string,
   variables: Record<string, any>
 ): Promise<T> {
-  if (!GRAPHQL_ENDPOINT) throw new Error();
+  if (!GRAPHQL_ENDPOINT) {
+    throw new Error("GRAPHQL_ENDPOINT is not set");
+  }
+
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
     headers: {

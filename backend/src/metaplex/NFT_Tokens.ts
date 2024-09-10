@@ -27,7 +27,7 @@ export const mintNFTToken = async (
       mint,
       name: nftName,
       uri: uri,
-      sellerFeeBasisPoints: percentAmount(5.5),
+      sellerFeeBasisPoints: percentAmount(0),
       tokenOwner: receiverWalletAddress,
     }).sendAndConfirm(umi);
 

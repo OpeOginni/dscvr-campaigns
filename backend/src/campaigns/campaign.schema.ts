@@ -32,6 +32,7 @@ export interface ICampaign extends Document {
   numberOfTokensAlreadyDistributed: number;
   image: any;
   imageURI: string;
+  tokenMintAddress?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -119,6 +120,10 @@ const CampaignSchema: Schema = new Schema(
       required: false,
     },
     imageURI: {
+      type: String,
+      required: false,
+    },
+    tokenMintAddress: {
       type: String,
       required: false,
     },
