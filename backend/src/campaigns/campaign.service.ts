@@ -20,6 +20,7 @@ export const createCampaign = async (campaignData: ICampaign) => {
     .replace(/ /g, "_")
     .replace(/^[a-zA-Z\_]$/, "");
   campaign.status = CampaignStatus.ACTIVE;
+  campaign.numberOfTokensAlreadyDistributed = 0;
 
   if (campaignData.image) {
     try {
