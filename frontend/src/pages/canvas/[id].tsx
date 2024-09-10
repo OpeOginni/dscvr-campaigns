@@ -186,13 +186,13 @@ export default function CampaignCanvas() {
         <div className="mt-4">
           <h2 className="text-lg font-bold">Minting Status:</h2>
           <p>
-            Amount Minted: {campaign.data.numberOfTokensAlreadyDistributed} /
-            {campaign.data.maxDistribution}
+            Amount Minted: {campaign.data.numberOfTokensAlreadyDistributed || 0}{" "}
+            /{campaign.data.maxDistribution}
           </p>
           <p>
             Amount Left to Mint:
             {campaign.data.maxDistribution -
-              campaign.data.numberOfTokensAlreadyDistributed}
+              (campaign.data.numberOfTokensAlreadyDistributed || 0)}
           </p>
         </div>
 
