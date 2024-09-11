@@ -154,6 +154,6 @@ export async function checkUserEligibility(
 
 function isAccountOldEnough(createdAt: string): boolean {
   const accountAge = Date.now() - new Date(createdAt).getTime();
-  const oneMonthInMs = 30 * 24 * 60 * 60 * 1000;
-  return accountAge >= oneMonthInMs;
+  const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+  return accountAge >= threeDaysInMs;
 }
