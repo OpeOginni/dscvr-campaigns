@@ -111,7 +111,11 @@ export const interactWithCampaign = async (
       },
       {
         tokenMintAddress: response.mintPublicKey,
-        $inc: { numberOfTokensAlreadyDistributed: 1 },
+        $inc: {
+          numberOfTokensAlreadyDistributed: 1,
+        },
+        // numberOfTokensAlreadyDistributed:
+        //   campaign.numberOfTokensAlreadyDistributed + 1,
       }
     );
 

@@ -116,7 +116,7 @@ const CampaignSchema: Schema = new Schema(
       required: false,
     },
     numberOfTokensAlreadyDistributed: {
-      type: String,
+      type: Number,
       required: false,
     },
     imageURI: {
