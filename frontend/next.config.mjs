@@ -5,7 +5,7 @@ const backendUrl =
 const graphql = process.env.GRAPHQL_ENDPOINT;
 
 const cspHeader = `
-    connect-src 'self' ${backendUrl} ${graphql};
+    connect-src 'self' ${backendUrl} ${graphql} https://api.devnet.solana.com/;
 `;
 
 const nextConfig = {

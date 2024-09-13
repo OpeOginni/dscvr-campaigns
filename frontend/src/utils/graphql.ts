@@ -140,13 +140,8 @@ export async function checkUserEligibility(
     (!campaign.shouldCommentOnPost || result.user.hasCommentedOnContent) &&
     (!campaign.shouldBePortalMember || result.content.portal.isMember);
 
-  const firstSolanaWallet = result.user.wallets.find(
-    (wallet) => wallet.walletChainType === "solana"
-  );
-
   return {
     isEligible,
-    firstSolanaWallet: firstSolanaWallet || null,
     userId: result.user.id,
     content: result.content,
   };
