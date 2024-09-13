@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useQuery } from "@tanstack/react-query";
 import { PackagePlus, Ghost, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import MainLayout from "@/components/mainLayout";
 
 export default function Home() {
   const { publicKey, connected } = useWallet();
@@ -112,3 +113,7 @@ export default function Home() {
     </div>
   );
 }
+
+Home.getLayout = function getLayout(page) {
+  return <MainLayout>{page}</MainLayout>;
+};

@@ -1,24 +1,10 @@
-import { SolanaWalletProvider } from "@/provider/SolanaWalletProvider";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import Head from "next/head";
-import { Toaster } from "@/components/ui/toaster";
-import { ReactQueryClientProvider } from "@/provider/ReactQueryClientProvider";
+import type { ReactNode } from "react";
 
-export default function App({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Head>
-        <meta name="description" content="DSCVR Example Canvas - Next.js" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="dscvr:canvas:version" content="vNext" />{" "}
-      </Head>
-      <SolanaWalletProvider>
-        <ReactQueryClientProvider>
-          <Component {...pageProps} />
-          <Toaster />
-        </ReactQueryClientProvider>
-      </SolanaWalletProvider>
-    </>
-  );
+export default function MyApp({ Component, pageProps }) {
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout || ((page: ReactNode) => page);
+
+  return getLayout(<Component {...pageProps} />);
 }

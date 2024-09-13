@@ -1,3 +1,5 @@
+import CanvasLayout from "@/components/canvasLayout";
+
 export default function Showcase() {
   const dashboardLink =
     process.env.NEXT_PUBLIC_URL || "https://localhost:3000/canvas";
@@ -28,3 +30,7 @@ export default function Showcase() {
     </div>
   );
 }
+
+Showcase.getLayout = function getLayout(page) {
+  return <CanvasLayout>{page}</CanvasLayout>;
+};

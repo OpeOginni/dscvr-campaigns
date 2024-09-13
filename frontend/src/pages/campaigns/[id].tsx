@@ -18,6 +18,7 @@ import {
 import { useCopyToClipboard } from "usehooks-ts";
 import { useState } from "react";
 import type { ICampaign } from "../../../interfaces/campaign.interface";
+import MainLayout from "@/components/mainLayout";
 
 export default function CampaignDetails() {
   const router = useRouter();
@@ -265,3 +266,7 @@ export default function CampaignDetails() {
     </div>
   );
 }
+
+CampaignDetails.getLayout = function getLayout(page) {
+  return <MainLayout>{page}</MainLayout>;
+};
